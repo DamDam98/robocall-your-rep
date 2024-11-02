@@ -1,179 +1,242 @@
 "use client";
 
+import CustomSelect from "@/components/CustomSelect";
+import { useStore } from "@/store/useStore";
+import {
+  HOME_OWNERSHIP_OPTIONS,
+  HomeOwnershipStatus,
+  PASSIONATE_ISSUES,
+  UserFormData,
+} from "@/types";
+import { useRouter } from "next/navigation";
 import { useState } from "react";
-import CallModal from "./components/CallModal";
 
-interface Representative {
-  name: string;
-  party: string;
-  state: string;
-  district: string;
-  phone: string;
-  office: string;
-  link: string;
-}
-
-interface ApiResponse {
-  results: Representative[];
-}
-
-interface ModalState {
-  isOpen: boolean;
-  phoneNumber: string;
-  representativeName: string;
-}
-
-/**
- * Home component that displays a zip code input form and shows representatives
- * @returns React component
- */
 export default function Home() {
-  const [zipCode, setZipCode] = useState("");
-  const [representatives, setRepresentatives] = useState<Representative[]>([]);
-  const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState("");
-  const [modalState, setModalState] = useState<ModalState>({
-    isOpen: false,
-    phoneNumber: "",
-    representativeName: "",
+  const router = useRouter();
+  const { setUserInfo, setLoading, setError, setRepresentatives } = useStore();
+  const [formData, setFormData] = useState<UserFormData>({
+    fullName: "",
+    zipCode: "",
+    age: "",
+    gender: "",
+    profession: "",
+    income: "",
+    homeOwnershipStatus: "",
+    passionateIssues: [],
+    message: "",
   });
 
-  /**
-   * Handles the form submission to fetch representatives data
-   * @param e - Form submission event
-   */
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setIsLoading(true);
+    setLoading(true);
     setError("");
 
     try {
-      const response = await fetch(`/api/representatives?zip=${zipCode}`);
+      const response = await fetch(
+        `/api/representatives?zip=${formData.zipCode}`
+      );
 
       if (!response.ok) {
         const errorData = await response.json();
         throw new Error(errorData.error || "Failed to fetch representatives");
       }
 
-      const data: ApiResponse = await response.json();
+      const data = await response.json();
       setRepresentatives(data.results);
+      setUserInfo(formData);
+      router.push("/representatives");
     } catch (err) {
       setError(
-        err instanceof Error
-          ? err.message
-          : "Error fetching representatives. Please try again."
+        err instanceof Error ? err.message : "Error fetching representatives"
       );
       console.error(err);
     } finally {
-      setIsLoading(false);
+      setLoading(false);
     }
-  };
-
-  const handleCallClick = (phoneNumber: string, name: string) => {
-    setModalState({
-      isOpen: true,
-      phoneNumber,
-      representativeName: name,
-    });
-  };
-
-  const handleCall = (phoneNumber: string) => {
-    console.log("Calling:", phoneNumber);
-    // Here you would implement actual call functionality
   };
 
   return (
     <div className="min-h-screen p-8">
-      <main className="max-w-3xl mx-auto">
+      <main className="max-w-2xl mx-auto">
         <h1 className="text-2xl font-bold mb-6">Find Your Representatives</h1>
 
-        <form onSubmit={handleSubmit} className="mb-8">
-          <div className="flex gap-4">
-            <input
-              type="text"
-              pattern="[0-9]{5}"
-              value={zipCode}
-              onChange={(e) => setZipCode(e.target.value)}
-              placeholder="Enter ZIP code"
-              className="px-4 py-2 border rounded-lg flex-grow"
-              maxLength={5}
+        <form onSubmit={handleSubmit} className="space-y-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div>
+              <label
+                htmlFor="fullName"
+                className="block text-sm font-medium mb-2"
+              >
+                Full Name
+              </label>
+              <input
+                id="fullName"
+                type="text"
+                value={formData.fullName}
+                onChange={(e) =>
+                  setFormData((prev) => ({ ...prev, fullName: e.target.value }))
+                }
+                className="w-full px-4 py-2 border rounded-lg"
+                required
+              />
+            </div>
+
+            <div>
+              <label
+                htmlFor="zipCode"
+                className="block text-sm font-medium mb-2"
+              >
+                ZIP Code
+              </label>
+              <input
+                id="zipCode"
+                type="text"
+                pattern="[0-9]{5}"
+                value={formData.zipCode}
+                onChange={(e) =>
+                  setFormData((prev) => ({ ...prev, zipCode: e.target.value }))
+                }
+                className="w-full px-4 py-2 border rounded-lg"
+                maxLength={5}
+                required
+              />
+            </div>
+
+            <div>
+              <label htmlFor="age" className="block text-sm font-medium mb-2">
+                Age
+              </label>
+              <input
+                id="age"
+                type="number"
+                min="18"
+                max="120"
+                value={formData.age}
+                onChange={(e) =>
+                  setFormData((prev) => ({ ...prev, age: e.target.value }))
+                }
+                className="w-full px-4 py-2 border rounded-lg"
+                required
+              />
+            </div>
+
+            <div>
+              <label
+                htmlFor="gender"
+                className="block text-sm font-medium mb-2"
+              >
+                Gender
+              </label>
+              <select
+                id="gender"
+                value={formData.gender}
+                onChange={(e) =>
+                  setFormData((prev) => ({
+                    ...prev,
+                    gender: e.target.value as "male" | "female" | "",
+                  }))
+                }
+                className="w-full px-4 py-2 border rounded-lg"
+                required
+              >
+                <option value="">Select gender</option>
+                <option value="male">Male</option>
+                <option value="female">Female</option>
+              </select>
+            </div>
+
+            <div>
+              <label
+                htmlFor="profession"
+                className="block text-sm font-medium mb-2"
+              >
+                Profession
+              </label>
+              <input
+                id="profession"
+                type="text"
+                value={formData.profession}
+                onChange={(e) =>
+                  setFormData((prev) => ({
+                    ...prev,
+                    profession: e.target.value,
+                  }))
+                }
+                className="w-full px-4 py-2 border rounded-lg"
+                required
+              />
+            </div>
+
+            <div>
+              <label
+                htmlFor="income"
+                className="block text-sm font-medium mb-2"
+              >
+                Income
+              </label>
+              <input
+                id="income"
+                type="text"
+                value={formData.income}
+                onChange={(e) =>
+                  setFormData((prev) => ({ ...prev, income: e.target.value }))
+                }
+                className="w-full px-4 py-2 border rounded-lg"
+                required
+              />
+            </div>
+          </div>
+
+          <div className="space-y-6">
+            <CustomSelect
+              label="Home Ownership Status"
+              options={HOME_OWNERSHIP_OPTIONS}
+              value={formData.homeOwnershipStatus}
+              onChange={(value) =>
+                setFormData((prev) => ({
+                  ...prev,
+                  homeOwnershipStatus: value as HomeOwnershipStatus,
+                }))
+              }
+            />
+
+            <CustomSelect
+              label="Issues You're Passionate About"
+              options={PASSIONATE_ISSUES}
+              value={formData.passionateIssues}
+              onChange={(value) =>
+                setFormData((prev) => ({
+                  ...prev,
+                  passionateIssues: value as string[],
+                }))
+              }
+              canChooseMultiple
+            />
+          </div>
+
+          <div>
+            <label htmlFor="message" className="block text-sm font-medium mb-2">
+              Message to Representatives
+            </label>
+            <textarea
+              id="message"
+              value={formData.message}
+              onChange={(e) =>
+                setFormData((prev) => ({ ...prev, message: e.target.value }))
+              }
+              className="w-full px-4 py-2 border rounded-lg"
+              rows={4}
               required
             />
-            <button
-              type="submit"
-              disabled={isLoading}
-              className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:bg-blue-300"
-            >
-              {isLoading ? "Loading..." : "Search"}
-            </button>
           </div>
+
+          <button
+            type="submit"
+            className="w-full px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:bg-blue-300"
+          >
+            Find Representatives
+          </button>
         </form>
-
-        {error && <div className="text-red-600 mb-4">{error}</div>}
-
-        {representatives.length > 0 && (
-          <div className="grid gap-6">
-            {representatives.map((rep, index) => (
-              <div key={index} className="border rounded-lg p-6 shadow-sm">
-                <h2 className="text-xl font-semibold mb-2">{rep.name}</h2>
-                <div className="grid gap-2">
-                  <p>
-                    <span className="font-medium">Party:</span> {rep.party}
-                  </p>
-                  <p>
-                    <span className="font-medium">State:</span> {rep.state}
-                  </p>
-                  {rep.district && (
-                    <p>
-                      <span className="font-medium">District:</span>{" "}
-                      {rep.district}
-                    </p>
-                  )}
-                  <div className="flex items-center justify-between">
-                    <p>
-                      <span className="font-medium">Phone:</span>{" "}
-                      {rep.phone || "No phone number available"}
-                    </p>
-                    <button
-                      onClick={() => handleCallClick(rep.phone, rep.name)}
-                      disabled={!rep.phone}
-                      className={`px-4 py-2 rounded-lg text-sm ${
-                        rep.phone
-                          ? "bg-green-600 text-white hover:bg-green-700"
-                          : "bg-gray-200 text-gray-500 cursor-not-allowed"
-                      }`}
-                    >
-                      Call
-                    </button>
-                  </div>
-                  {rep.office && (
-                    <p>
-                      <span className="font-medium">Office:</span> {rep.office}
-                    </p>
-                  )}
-                  {rep.link && (
-                    <a
-                      href={rep.link}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="text-blue-600 hover:underline"
-                    >
-                      Official Website →
-                    </a>
-                  )}
-                </div>
-              </div>
-            ))}
-          </div>
-        )}
-
-        <CallModal
-          isOpen={modalState.isOpen}
-          onClose={() => setModalState((prev) => ({ ...prev, isOpen: false }))}
-          initialPhoneNumber={modalState.phoneNumber}
-          representativeName={modalState.representativeName}
-          onCall={handleCall}
-        />
       </main>
     </div>
   );
