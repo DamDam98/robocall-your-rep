@@ -1,4 +1,4 @@
-import { NextResponse } from 'next/server';
+import { NextResponse } from "next/server";
 
 const apiKey = process.env.BLAND_API_KEY;
 
@@ -8,19 +8,19 @@ export async function POST(request: Request) {
   const { phoneNumber, prompt, gender } = body;
 
   const getVoice = (gender: string) => {
-    if (gender === 'male') {
-      return 'ryan';
+    if (gender === "male") {
+      return "ryan";
     } else {
-      return 'maya';
+      return "maya"; // female voice
     }
   };
 
   try {
     const options = {
-      method: 'POST',
+      method: "POST",
       headers: {
         authorization: `Bearer ${apiKey}`,
-        'Content-Type': 'application/json',
+        "Content-Type": "application/json",
       },
       body: JSON.stringify({
         phone_number: phoneNumber,
@@ -29,9 +29,9 @@ export async function POST(request: Request) {
       }),
     };
 
-    fetch('https://api.bland.ai/v1/calls', options)
+    fetch("https://api.bland.ai/v1/calls", options)
       .then(async (response) => {
-        console.log('Response:', response);
+        console.log("Response:", response);
         if (!response.ok) {
           return response.text().then((text) => {
             throw new Error(`HTTP error! status: ${response.status} - ${text}`);
@@ -39,13 +39,13 @@ export async function POST(request: Request) {
         }
         return response.json();
       })
-      .then((data) => console.log('This the Response Data', data))
-      .catch((err) => console.error('Bland AI Fetch error:', err));
-    return NextResponse.json('');
+      .then((data) => console.log("This the Response Data", data))
+      .catch((err) => console.error("Bland AI Fetch error:", err));
+    return NextResponse.json("");
   } catch (error) {
-    console.error('Error calling bland ai:', error);
+    console.error("Error calling bland ai:", error);
     return NextResponse.json(
-      { error: 'Failed to fetch bland' },
+      { error: "Failed to fetch bland" },
       { status: 500 }
     );
   }
