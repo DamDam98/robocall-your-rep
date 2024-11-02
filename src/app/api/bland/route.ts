@@ -5,6 +5,8 @@ const apiKey = process.env.BLAND_API_KEY;
 export async function POST(request: Request) {
   const body = await request.json();
 
+  console.log("Body:", body);
+
   const { phoneNumber, prompt, gender } = body;
 
   const getVoice = (gender: string) => {
