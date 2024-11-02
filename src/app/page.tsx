@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import CallModal from "./components/CallModal";
 
 interface Representative {
   name: string;
@@ -16,6 +17,12 @@ interface ApiResponse {
   results: Representative[];
 }
 
+interface ModalState {
+  isOpen: boolean;
+  phoneNumber: string;
+  representativeName: string;
+}
+
 /**
  * Home component that displays a zip code input form and shows representatives
  * @returns React component
@@ -25,6 +32,11 @@ export default function Home() {
   const [representatives, setRepresentatives] = useState<Representative[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState("");
+  const [modalState, setModalState] = useState<ModalState>({
+    isOpen: false,
+    phoneNumber: "",
+    representativeName: "",
+  });
 
   /**
    * Handles the form submission to fetch representatives data
@@ -55,6 +67,19 @@ export default function Home() {
     } finally {
       setIsLoading(false);
     }
+  };
+
+  const handleCallClick = (phoneNumber: string, name: string) => {
+    setModalState({
+      isOpen: true,
+      phoneNumber,
+      representativeName: name,
+    });
+  };
+
+  const handleCall = (phoneNumber: string) => {
+    console.log("Calling:", phoneNumber);
+    // Here you would implement actual call functionality
   };
 
   return (
@@ -104,11 +129,23 @@ export default function Home() {
                       {rep.district}
                     </p>
                   )}
-                  {rep.phone && (
+                  <div className="flex items-center justify-between">
                     <p>
-                      <span className="font-medium">Phone:</span> {rep.phone}
+                      <span className="font-medium">Phone:</span>{" "}
+                      {rep.phone || "No phone number available"}
                     </p>
-                  )}
+                    <button
+                      onClick={() => handleCallClick(rep.phone, rep.name)}
+                      disabled={!rep.phone}
+                      className={`px-4 py-2 rounded-lg text-sm ${
+                        rep.phone
+                          ? "bg-green-600 text-white hover:bg-green-700"
+                          : "bg-gray-200 text-gray-500 cursor-not-allowed"
+                      }`}
+                    >
+                      Call
+                    </button>
+                  </div>
                   {rep.office && (
                     <p>
                       <span className="font-medium">Office:</span> {rep.office}
@@ -129,6 +166,14 @@ export default function Home() {
             ))}
           </div>
         )}
+
+        <CallModal
+          isOpen={modalState.isOpen}
+          onClose={() => setModalState((prev) => ({ ...prev, isOpen: false }))}
+          initialPhoneNumber={modalState.phoneNumber}
+          representativeName={modalState.representativeName}
+          onCall={handleCall}
+        />
       </main>
     </div>
   );
