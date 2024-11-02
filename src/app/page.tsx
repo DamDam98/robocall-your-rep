@@ -9,22 +9,17 @@ import {
   UserFormData,
 } from "@/types";
 import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 export default function Home() {
   const router = useRouter();
-  const { setUserInfo, setLoading, setError, setRepresentatives } = useStore();
-  const [formData, setFormData] = useState<UserFormData>({
-    fullName: "",
-    zipCode: "",
-    age: "",
-    gender: "",
-    profession: "",
-    income: "",
-    homeOwnershipStatus: "",
-    passionateIssues: [],
-    message: "",
-  });
+  const { setUserInfo, setLoading, setError, setRepresentatives, userInfo } =
+    useStore();
+  const [formData, setFormData] = useState<UserFormData>(userInfo);
+
+  useEffect(() => {
+    setFormData(userInfo);
+  }, [userInfo]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -58,7 +53,7 @@ export default function Home() {
   return (
     <div className="min-h-screen p-8">
       <main className="max-w-2xl mx-auto">
-        <h1 className="text-2xl font-bold mb-6">Find Your Representatives</h1>
+        <h1 className="text-2xl font-bold mb-6">Robocall My Representatives</h1>
 
         <form onSubmit={handleSubmit} className="space-y-6">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -216,17 +211,17 @@ export default function Home() {
 
           <div>
             <label htmlFor="message" className="block text-sm font-medium mb-2">
-              Message to Representatives
+              Additional Message (Optional)
             </label>
             <textarea
               id="message"
-              value={formData.message}
+              value={formData.message || ""}
               onChange={(e) =>
                 setFormData((prev) => ({ ...prev, message: e.target.value }))
               }
               className="w-full px-4 py-2 border rounded-lg"
               rows={4}
-              required
+              placeholder="Add any additional information you'd like to share..."
             />
           </div>
 

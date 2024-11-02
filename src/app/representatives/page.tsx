@@ -1,6 +1,7 @@
 "use client";
 
 import CallModal from "@/components/CallModal";
+import { generateCallPrompt } from "@/components/CallPrompt";
 import { useStore } from "@/store/useStore";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
@@ -8,6 +9,7 @@ import { useEffect, useState } from "react";
 export default function Representatives() {
   const router = useRouter();
   const { representatives, userInfo } = useStore();
+  const [isPromptExpanded, setIsPromptExpanded] = useState(false);
   const [modalState, setModalState] = useState({
     isOpen: false,
     phoneNumber: "",
@@ -34,6 +36,19 @@ export default function Representatives() {
     // Implement call functionality
   };
 
+  const callPrompt = generateCallPrompt({
+    fullName: userInfo.fullName,
+    age: userInfo.age,
+    zipCode: userInfo.zipCode,
+    homeOwnershipStatus: userInfo.homeOwnershipStatus,
+    representativeName: representatives[0]?.name || "your representative",
+    passionateIssues: userInfo.passionateIssues,
+    gender: userInfo.gender,
+    profession: userInfo.profession,
+    income: userInfo.income,
+    message: userInfo.message,
+  });
+
   return (
     <div className="min-h-screen p-8">
       <main className="max-w-3xl mx-auto">
@@ -43,15 +58,11 @@ export default function Representatives() {
             onClick={() => router.push("/")}
             className="text-blue-600 hover:underline"
           >
-            ← Back to Search
+            ← Edit Form
           </button>
         </div>
 
-        <p className="mb-6">
-          Results for {userInfo.fullName} in {userInfo.zipCode}
-        </p>
-
-        <div className="grid gap-6">
+        <div className="grid gap-6 mb-8">
           {representatives.map((rep, index) => (
             <div key={index} className="border rounded-lg p-6 shadow-sm">
               <h2 className="text-xl font-semibold mb-2">{rep.name}</h2>
@@ -103,6 +114,39 @@ export default function Representatives() {
               </div>
             </div>
           ))}
+        </div>
+
+        <div className="border rounded-lg overflow-hidden">
+          <button
+            onClick={() => setIsPromptExpanded(!isPromptExpanded)}
+            className="w-full px-6 py-4 text-left bg-gray-50 hover:bg-gray-100 flex justify-between items-center"
+          >
+            <span className="font-medium">Robo Call Prompt</span>
+            <svg
+              className={`w-5 h-5 transform transition-transform ${
+                isPromptExpanded ? "rotate-180" : ""
+              }`}
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M19 9l-7 7-7-7"
+              />
+            </svg>
+          </button>
+          <div
+            className={`transition-all duration-200 ease-in-out ${
+              isPromptExpanded
+                ? "max-h-[1000px] opacity-100"
+                : "max-h-0 opacity-0"
+            }`}
+          >
+            <div className="p-6 bg-white whitespace-pre-wrap">{callPrompt}</div>
+          </div>
         </div>
 
         <CallModal

@@ -7,7 +7,7 @@ export interface UserFormData {
   income: string;
   homeOwnershipStatus: HomeOwnershipStatus;
   passionateIssues: string[];
-  message: string;
+  message?: string;
 }
 
 export type HomeOwnershipStatus =
