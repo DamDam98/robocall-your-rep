@@ -1,11 +1,5 @@
 "use client";
 
-interface Option {
-  value: string;
-  label: string;
-  description: string;
-}
-
 interface CustomSelectProps {
   options: Record<string, { label: string; description: string }>;
   value: string | string[];
