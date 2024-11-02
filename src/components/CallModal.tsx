@@ -8,6 +8,8 @@ interface CallModalProps {
   initialPhoneNumber: string;
   representativeName: string;
   onCall: (phoneNumber: string) => void;
+  isLoading?: boolean;
+  error?: string;
 }
 
 /**
@@ -21,6 +23,8 @@ export default function CallModal({
   initialPhoneNumber,
   representativeName,
   onCall,
+  isLoading = false,
+  error = "",
 }: CallModalProps) {
   const [phoneNumber, setPhoneNumber] = useState(initialPhoneNumber);
 
@@ -32,7 +36,6 @@ export default function CallModal({
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     onCall(phoneNumber);
-    onClose();
   };
 
   if (!isOpen) return null;
@@ -56,22 +59,27 @@ export default function CallModal({
               onChange={(e) => setPhoneNumber(e.target.value)}
               className="w-full px-4 py-2 border rounded-lg"
               placeholder="Enter phone number"
+              disabled={isLoading}
             />
           </div>
+
+          {error && <div className="mb-4 text-red-600 text-sm">{error}</div>}
 
           <div className="flex gap-4 justify-end">
             <button
               type="button"
               onClick={onClose}
               className="px-4 py-2 text-gray-600 hover:bg-gray-100 rounded-lg"
+              disabled={isLoading}
             >
               Cancel
             </button>
             <button
               type="submit"
-              className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700"
+              disabled={isLoading}
+              className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 disabled:bg-green-300"
             >
-              Call Now
+              {isLoading ? "Calling..." : "Call Now"}
             </button>
           </div>
         </form>

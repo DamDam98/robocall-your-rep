@@ -14,7 +14,10 @@ export default function Representatives() {
     isOpen: false,
     phoneNumber: "",
     representativeName: "",
+    prompt: "",
   });
+  const [isCallLoading, setIsCallLoading] = useState(false);
+  const [callError, setCallError] = useState("");
 
   // Redirect if no data is present
   useEffect(() => {
@@ -24,16 +27,57 @@ export default function Representatives() {
   }, [representatives, userInfo, router]);
 
   const handleCallClick = (phoneNumber: string, name: string) => {
+    const prompt = generateCallPrompt({
+      fullName: userInfo.fullName,
+      age: userInfo.age,
+      zipCode: userInfo.zipCode,
+      homeOwnershipStatus: userInfo.homeOwnershipStatus,
+      representativeName: name,
+      passionateIssues: userInfo.passionateIssues,
+      gender: userInfo.gender,
+      profession: userInfo.profession,
+      income: userInfo.income,
+      message: userInfo.message,
+    });
+
     setModalState({
       isOpen: true,
       phoneNumber,
       representativeName: name,
+      prompt,
     });
   };
 
-  const handleCall = (phoneNumber: string) => {
-    console.log("Calling:", phoneNumber);
-    // Implement call functionality
+  const handleCall = async (phoneNumber: string) => {
+    setIsCallLoading(true);
+    setCallError("");
+
+    try {
+      const response = await fetch("/api/bland", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          phoneNumber,
+          gender: userInfo.gender,
+          prompt: modalState.prompt,
+        }),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || "Failed to make call");
+      }
+
+      // Close modal on success
+      setModalState((prev) => ({ ...prev, isOpen: false }));
+    } catch (err) {
+      setCallError(err instanceof Error ? err.message : "Failed to make call");
+      console.error("Call error:", err);
+    } finally {
+      setIsCallLoading(false);
+    }
   };
 
   const callPrompt = generateCallPrompt({
@@ -155,6 +199,8 @@ export default function Representatives() {
           initialPhoneNumber={modalState.phoneNumber}
           representativeName={modalState.representativeName}
           onCall={handleCall}
+          isLoading={isCallLoading}
+          error={callError}
         />
       </main>
     </div>
