@@ -1,0 +1,7 @@
+{
+  "functions": {
+    "api/bland/*.ts": {
+      "maxDuration": 60
+    }
+  }
+}
