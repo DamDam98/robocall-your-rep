@@ -1,6 +1,6 @@
 {
   "functions": {
-    "api/bland/*.ts": {
+    "app/api/bland/route.ts": {
       "maxDuration": 60
     }
   }
